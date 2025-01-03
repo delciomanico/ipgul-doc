@@ -137,7 +137,8 @@
     "wrap-ansi-cjs": "^7.0.0"
   },
   "scripts": {
-    "test": node app
+    "start": node app,
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
