@@ -1,0 +1,23 @@
+  
+  <main class="main">
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+
+      <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in">
+
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-10">
+            <h2 data-aos="fade-up" data-aos-delay="100">Bem Vindo ao TARGET {{#each user}}{{#if nome}}{{nome}}{{/if}}{{/each}}</h2>
+            <p data-aos="fade-up" data-aos-delay="200">O seu sistema de controle de tragetoria de finalistas</p>
+          </div>
+          <div class="col-lg-5">
+            <form action="#" class="sign-up-form d-flex" data-aos="fade-up" data-aos-delay="300">
+              <input type="text" class="form-control" placeholder="seu endereço email">
+              <input type="submit" class="btn btn-primary" value="Enviar">
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </section>

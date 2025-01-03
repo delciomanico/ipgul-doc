@@ -1,0 +1,76 @@
+<div class="login-area login-bg">
+    <div class="container">
+        <div class="login-box ptb--100">
+            <form action="registro/add" method="post">
+                <div class="login-form-head">
+                    <h4>IPGUL</h4>
+                    <p>Ola seja bem vindo ao sistema do ipgul</p>
+                </div>
+                {{>_msgHome}}
+                <div class="login-form-body">
+                    <div class="form-gp">
+                        <label for="exampleInputName1">Nome completo</label>
+                        <input type="text" id="exampleInputName1" name="nome">
+                        <i class="ti-user"></i>
+                        <div class="text-danger"></div>
+                    </div>
+                    <div class="form-gp">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" id="exampleInputEmail1" name="email">
+                        <i class="ti-email"></i>
+                        <div class="text-danger"></div>
+                    </div>
+                    <div class="form-gp">
+                        <select name="departamento" id="exampleInputEmail1" class="form-control form-select">
+                            <option value="">Selecionar ...</option>
+                            {{#each departamento}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                        <div class="text-danger"></div>
+                    </div>
+                    <div class="form-gp">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" id="exampleInputPassword1" name="senha">
+                        <i class="ti-lock"></i>
+                        <div class="text-danger"></div>
+                    </div>
+                    <div class="form-gp">
+                        <label for="exampleInputPassword2">Confirmar Password</label>
+                        <input type="password" id="exampleInputPassword2" name="senha2" oninput="confirmar_senha">
+                        <i class="ti-lock"></i>
+                        <div class="text-danger" id="erro_senha"></div>
+                    </div>
+                    <div class="submit-btn-area">
+                        <button id="form_submit" type="submit">Criar conta <i class="ti-arrow-right"></i></button>
+                       
+                    </div>
+                    <div class="form-footer text-center mt-5">
+                        <p class="text-muted">Ja tem uma conta? <a href="login"></a></p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- login area end -->
+<script>
+
+</script>
+<!-- jquery latest version -->
+<script src="/assets/js/vendor/jquery-2.2.4.min.js"></script>
+<!-- bootstrap 4 js -->
+<script src="/assets/js/popper.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/owl.carousel.min.js"></script>
+<script src="/assets/js/metisMenu.min.js"></script>
+<script src="/assets/js/jquery.slimscroll.min.js"></script>
+<script src="/assets/js/jquery.slicknav.min.js"></script>
+
+<!-- others plugins -->
+<script src="/assets/js/plugins.js"></script>
+<script src="/assets/js/scripts.js"></script>
