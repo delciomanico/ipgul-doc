@@ -19,7 +19,7 @@ jobs:
         node-version: '20'  # Aqui você pode definir a versão do Node.js que deseja instalar
 
     - name: Install dependencies
-      run: npm ci  # Usando o npm ci para instalar dependências
+        # Usando o npm ci para instalar dependências
 
     - name: Run tests or start server
       run: npm start  # Rodar o servidor ou seus testes, dependendo do seu script start
