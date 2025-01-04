@@ -15,6 +15,7 @@
     "brace-expansion": "^2.0.1",
     "bson": "^6.8.0",
     "bytes": "^3.1.2",
+    "bcryptjs": "^2.4.3",
     "call-bind": "^1.0.7",
     "color-convert": "^2.0.1",
     "color-name": "^1.1.4",
@@ -138,6 +139,7 @@
     "wrap-ansi-cjs": "^7.0.0"
   },
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
