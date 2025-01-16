@@ -1,0 +1,206 @@
+
+{{>_dashboard}}
+{{>_msgHome}}
+
+    <style>
+        :root {
+            --header-height: 3rem;
+            --nav-width: 68px;
+            --first-color: #FF7C38;
+            --white-color: #F7F6FB;
+            --body-font: 'Nunito', sans-serif;
+            --normal-font-size: 1rem;
+        }
+        .dashboard-card { transition: transform 0.3s; }
+        .dashboard-card:hover { transform: translateY(-5px); }
+    </style>
+    <div class="container-fluid pt-4">
+        <!-- Cards Dinâmicos -->
+        <div id="statusCards" class="row mt-4"></div>
+
+        <!-- Tabela de Pesquisa -->
+
+        <div class="row mt-4">
+          <div class="col-md-4">
+              <label for="startDate" class="form-label">Data de Início</label>
+              <input type="date" id="startDate" class="form-control">
+          </div>
+          <div class="col-md-4">
+              <label for="endDate" class="form-label">Data de Término</label>
+              <input type="date" id="endDate" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+              <button id="filterButton" class="btn btn-primary w-100">Aplicar Filtro</button>
+          </div>
+      </div>
+      
+        <!-- Gráficos -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Documentos por Categoria</h5>
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Status de Documentos</h5>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Documentos Recentes -->
+        <div class="row mt-4">
+          <div class="col-md-8">
+              <div class="card dashboard-card">
+                  <div class="card-body">
+                      <h5 class="card-title">Documentos Recentes</h5>
+                      <div class="table-responsive">
+                          <table class="table">
+                              <thead>
+                                  <tr>
+                                    <th>Documento</th>
+                                    <th>Responsavel</th>
+                                      <th>Departamento</th>
+                                      <th>Status</th>
+                                      <th>Vencimento</th>
+                                  </tr>
+                              </thead>
+                              <tbody id="documentTableBody"></tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script >
+document.getElementById('filterButton').addEventListener('click', async () => {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate)   
+        return alert('Por favor, selecione ambas as datas.');
+    else if (startDate > endDate)
+        return alert('A data de inicio nao pode ser maior que a de termino.');
+
+    const queryString = `?start=${startDate}&end=${endDate}`;
+
+    try {
+        const response = await fetch(`api/documentos/status${queryString}`);
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.statusText}`);
+        }
+        const results = await response.json();
+        const json = results.dados;
+
+        const cardsContainer = document.getElementById('statusCards');
+        cardsContainer.innerHTML = ''; // Limpa o conteúdo anterior
+
+        if (Array.isArray(json) && json.length > 0) {
+            json.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-md-3';
+                card.innerHTML = `
+                    <div class="card dashboard-card ${item.nome === 'Ativo' ? 'bg-success' : 'Pendente' ? 'bg-warning': 'bg-primary'} text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Documentos ${item.nome}</h5>
+                            <h2>${item.qt}</h2>
+                        </div>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+        } else {
+            cardsContainer.innerHTML = '<p>Nenhum resultado encontrado.</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar os cartões de status:', error);
+        alert('Erro ao buscar dados. Por favor, tente novamente.');
+    }
+        
+
+    
+    // Atualiza a tabela de documentos recentes
+    fetch(`api/documentos/recentes${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('documentTableBody');
+            tableBody.innerHTML = data.map(doc => `
+                <tr>
+                  <td>${doc.nome}</td>
+                    <td>${doc.responsavel.nome}</td>
+                    <td>${doc.departamento.nome}</td>
+                    <td><span class="badge ${doc.situacao.nome === 'Ativo' ? 'bg-success' : 'bg-warning'}">${doc.situacao.nome}</span></td>
+                    <td>${new Date(doc.data_criacao).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        });
+
+
+        // Criação do gráfico "deptChart"
+      const deptChartContext = document.getElementById('departmentChart').getContext('2d');
+      const deptChart = new Chart(deptChartContext, {
+            type: 'bar',
+            data: {
+              labels: ['RH', 'TI', 'Financeiro', 'Operações', 'Jurídico'],
+              datasets: [{
+                label: 'Quantidade de Documentos',
+                data: [300, 450, 200, 380, 250],
+                backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(255, 206, 86, 0.5)', 'rgba(75, 192, 192, 0.5)', 'rgba(153, 102, 255, 0.5)'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Ativos', 'Em Revisão', 'Vencidos', 'Arquivados'],
+              datasets: [{
+                data: [65, 15, 10, 10],
+                backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 206, 86, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(153, 102, 255, 0.5)'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                }
+              }
+            }
+          });
+
+    // Atualiza os gráficos
+    fetch(`api/relatorio${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            deptChart.data.labels = data.departamentos.map(d => d.nome);
+            deptChart.data.datasets[0].data = data.departamentos.map(d => d.count);
+            deptChart.update();
+
+            statusChart.data.labels = data.status.map(s => s.nome);
+            statusChart.data.datasets[0].data = data.status.map(s => s.count);
+            statusChart.update();
+        });
+});
+
+    </script>
+

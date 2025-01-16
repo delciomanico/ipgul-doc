@@ -1,0 +1,143 @@
+    <!-- preloader area start -->
+    <div id="preloader">
+        <div class="loader"></div>
+    </div>
+    <!-- preloader area end -->
+    <!-- page container area start -->
+    <div class="page-container">
+        <!-- sidebar menu area start -->
+        <div class="sidebar-menu">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <a href="#"><img src="/assets/images/icon/logo.png" alt="logo"></a>
+                </div>
+            </div>
+            <div class="main-menu">
+                <div class="menu-inner">
+                    <nav>
+                        <ul class="metismenu" id="menu">
+                            <li class="active">
+                                <a href="javascript:void(0)" aria-expanded="true"><i class="ti-dashboard"></i><span>dashboard</span></a>
+                                <ul class="collapse">
+                                    <li><a href="/dash">Relatorios</a></li>
+                                    <li><a href="/auditoria">Notificacao</a></li>
+                                    <li class="active"><a href="/dash">dashboard</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0)" aria-expanded="true"><i class="ti-layout-sidebar-left"></i><span>Documentos
+                                    </span></a>
+                                <ul class="collapse">
+                                    <li><a href="/doc">Ver</a></li>
+                                    <li><a href="/doc_validade">Validade</a></li>
+                                    <li><a href="/new_doc">Novo</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0)" aria-expanded="true"><i class="ti-pie-chart"></i><span>Perfil</span></a>
+                                <ul class="collapse">
+                                    <li><a href="/perfil">Meu Perfil</a></li>
+                                    <li><a href="/logout">Sair</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0)" aria-expanded="true"><i class="ti-settings"></i><span>Definicoes</span></a>
+                                <ul class="collapse">
+                                    <li><a href="/categoria">Categoria</a></li>
+                                    <li><a href="/subcategoria">Subcategoria</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <!-- sidebar menu area end -->
+        <!-- main content area start -->
+        <div class="main-content">
+            <!-- header area start -->
+            <div class="header-area">
+                <div class="row align-items-center">
+                    <!-- nav and search button -->
+                    <div class="col-md-6 col-sm-8 clearfix">
+                        <div class="nav-btn pull-left">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="search-box pull-left">
+                            <form action="#">
+                                <input type="text" name="search" placeholder="Search..." required>
+                                <i class="ti-search"></i>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- profile info & task notification -->
+                    <div class="col-md-6 col-sm-4 clearfix">
+                        <ul class="notification-area pull-right">
+                            <li id="full-view"><i class="ti-fullscreen"></i></li>
+                            <li id="full-view-exit"><i class="ti-zoom-out"></i></li>
+                            <li class="dropdown">
+                                <i class="ti-bell dropdown-toggle" data-toggle="dropdown">
+                                    <span>0</span>
+                                </i>
+                                <div class="dropdown-menu bell-notify-box notify-box">
+                                    <span class="notify-title">Serviço Indisponivel <a href="auditoria">Ver Tudo</a></span>
+                                    <div class="nofity-list">
+                                        <a href="#" class="notify-item">
+                                            <div class="notify-thumb"><i class="ti-user btn-danger"></i></div>
+                                            <div class="notify-text">
+                                                <p>.....</p>
+                                                <span>...</span>
+                                            </div>
+                                        </a>
+                                        
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="dropdown">
+                                <i class="fa fa-envelope-o dropdown-toggle" data-toggle="dropdown"><span>0</span></i>
+                                <div class="dropdown-menu notify-box nt-enveloper-box">
+                                    <span class="notify-title">Serviço Indisponivel <a href="#">Ver Tudo</a></span>
+                                    <div class="nofity-list">
+                                        <a href="#" class="notify-item">
+                                            <div class="notify-thumb"><i class="ti-user btn-danger"></i></div>
+                                            <div class="notify-text">
+                                                <p>.....</p>
+                                                <span>...</span>
+                                            </div>
+                                        </a>
+                                        
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- header area end -->
+            <!-- page title area start -->
+            <div class="page-title-area">
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <div class="breadcrumbs-area clearfix">
+                            <h4 class="page-title pull-left">IPGUL</h4>
+                            
+                        </div>
+                    </div>
+                    <div class="col-sm-6 clearfix">
+                        <div class="user-profile pull-right">
+                            <img class="avatar user-thumb" src="/assets/images/author/avatar.png" alt="avatar">
+                            <h4 class="user-name dropdown-toggle" data-toggle="dropdown">{{#each user}} {{#if nome}} {{nome}}{{/if}}{{/each}}<i class="fa fa-angle-down"></i></h4>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">Mensagens</a>
+                                <a class="dropdown-item" href="#">Definições</a>
+                                <a class="dropdown-item" href="/logout">Sair</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Main -->
+            <div class="main-content-inner">
+                

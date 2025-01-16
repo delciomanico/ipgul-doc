@@ -1,0 +1,39 @@
+<header id="header" class="header d-flex align-items-center fixed-top" style="box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.1);">
+    <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
+
+        <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
+            <!-- Uncomment the line below if you also wish to use an image logo -->
+            <!-- <img src="assets/img/logo.png" alt=""> -->
+            <h1 class="sitename">TAR</h1><span>GET <img src="/assets/img/ipiz.png" alt="" srcset=""></span>
+        </a>
+
+        <nav id="navmenu" class="navmenu">
+            <ul>
+                <li>
+                    <a href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                {{#if user}}
+                <li>
+                    <a href="/usuario/area">Area de Trabalho</a>
+                </li>
+                 <li>
+                    <a href="/usuario/Perfil">Perfil</a>
+                </li>
+                {{else}}
+                <li>
+                    <a href="/usuario/registro">Registro</a>
+                </li>
+                {{/if}}
+                
+            </ul>
+                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+
+        </nav>
+        {{#if user}}
+        <a class="btn-getstarted" href="/usuario/logout">Sair</a>
+        {{else}}
+        <a class="btn-getstarted" href="/usuario/login">Entrar</a>
+        {{/if}}
+
+    </div>
+</header>

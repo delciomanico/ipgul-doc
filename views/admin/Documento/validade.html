@@ -1,0 +1,257 @@
+{{>_dashboard}}
+
+
+<style>
+    :root {
+        --primary-color: #FF7C38 ;
+        --primary-hover: #faa06f ;
+    }
+    
+    .bg-custom {
+        background-color: var(--primary-color);
+    }
+    
+    .btn-custom {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-custom:hover {
+        background-color: var(--primary-hover);
+        color: white;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(255, 140, 0, 0.25);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 140, 0, 0.1);
+    }
+    
+    .document-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+    </style>
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-center">Validade de Documentos</h2>
+    
+    <!-- Search Filters -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select form-control" id="categoria">
+                            <option value="">Selecione</option>
+                            {{#each categorias}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Sub-Categoria</label>
+                        <select class="form-select form-control" id="subcategoria">
+                            <option value="">Selecione</option>
+                            {{#each subcategorias}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Palavra-chave</label>
+                        <input type="text" class="form-control" placeholder="Buscar..." id="chave">
+                    </div>
+                    
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-custom">
+                            <i class="bi bi-search"></i> Pesquisar
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="resultsTable">
+                    <thead class="bg-custom text-white">
+                        <tr>
+                            <th>Nome do Documento</th>
+                            <th>categoria</th>
+                            <th>subcategoria</th>
+                            <th>municipio</th>
+                            <th>situacao</th>
+                            <th>caminho_fisico</th>
+                            <th>caminho</th>
+                            <th>descricao</th>
+                            <th>data_expiracao</th>
+                            <th>data_criacao</th>
+                            <th>Dias</th>
+                            <th>Anexar</th>
+                            <th>Editar</th>
+                        </tr>
+                    </thead>
+                    <tbody >
+                        {{#each dados}}
+                        {{#if nome}}
+                        <tr>
+                            <td><i class="bi bi-file-pdf document-icon"></i>{{nome}}</td>
+                            <td>{{#each categoria}} {{nome}}{{/each}}</td>
+                            <td>{{#each subcategoria}} {{nome}}{{/each}}</td>
+                            <td>{{#each municipio}} {{nome}}{{/each}}</td>
+                            <td>{{#each situacao}} {{nome}}{{/each}}</td>
+                            <td>{{caminho_fisico}}</td>
+                            <td><a href="/{{caminho}}" target="_blank">aqui</a></td>
+                            <td>{{descricao}}</td>
+                            <td>{{data_expiracao}}</td>
+                            <td>{{data_criacao}}</td>
+                            <td>{{diasRestantes}}</td>
+
+                            <td>
+                            
+                                <a href="anexos/{{_id}}">
+                                    <button class="btn btn-sm btn-custom" title="Anexar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                </a>
+                            </td>
+                            <td>
+                            
+                                <a href="doc_edit/{{_id}}">
+                                    <button class="btn btn-sm btn-custom" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                </a>
+                            </td>
+                        </tr>
+                        {{/if}}
+                        {{else}}
+                        <tr><td>Nenhum registro encontrado</td></tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="https://example.com/page/1" tabindex="-1">Anterior</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="https://example.com/page/1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="https://example.com/page/2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="https://example.com/page/3">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="https://example.com/page/2">Próximo</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script defer>
+    document.getElementById('searchForm').addEventListener('submit', async function (event) {
+   event.preventDefault();  // Evita o comportamento padrão de recarregar a página
+ 
+   const cat = document.getElementById('categoria').value.trim();
+   const subCat = document.getElementById('subcategoria').value.trim();
+   const data = document.getElementById('data').value.trim();
+   const chave = document.getElementById('chave').value.trim();
+ 
+   // Verifica se os campos têm algum valor antes de construir a query
+   let queryString = '?';
+   
+   if (cat) queryString += `cat=${cat}&`;
+   if (subCat) queryString += `subCat=${subCat}&`;
+   if (data) queryString += `data=${data}&`;
+   if (chave) queryString += `chave=${chave}&`;
+ 
+   // Remover o último "&" se existir
+   queryString = queryString.slice(0, -1);
+ 
+   // Se ao menos um filtro foi preenchido, faz a requisição
+   if (queryString !== '?') {
+     try {
+       const response = await fetch(`documento/search_validade/doc${queryString}`);
+       if (!response.ok) {
+         throw new Error('Erro na requisição');
+       }
+       const results = await response.json();
+ 
+       // Limpa os resultados anteriores
+       const tableBody = document.getElementById('resultsTable').querySelector('tbody');
+       tableBody.innerHTML = '';
+ 
+       // Preenche a tabela com os resultados
+       results.forEach(item => {
+         const row = document.createElement('tr');
+         row.innerHTML = `
+           <td>${item.nome}</td>
+           <td>${item.categoria.nome}</td>
+           <td>${item.subcategoria.nome}</td>
+           <td>${item.municipio.nome}</td>
+           <td>${item.situacao.nome}</td>
+           <td>${item.caminho_fisico}</td>
+           <td><a href="/${item.caminho}" target="_blank">aqui</a></td>
+           <td>${item.descricao}</td>
+           <td>${item.data_expiracao}</td>
+           <td>${item.data_criacao}</td>
+           <td>${item.diasRestantes}</td>
+           <td>
+             <button class="btn btn-sm btn-custom" title="Anexar">
+               <i class="bi bi-pencil"></i>
+             </button>
+           </td>
+           <td>
+              <a href="doc_edit/${item._id}">
+               <button class="btn btn-sm btn-custom" title="Editar">
+                 <i class="bi bi-trash"></i>
+               </button>
+             </a>
+           </td>
+         `;
+         tableBody.appendChild(row);
+       });
+     } catch (error) {
+        alert('Prencha todos os campos')
+       console.error('Erro ao realizar a pesquisa:', error);
+       // Adicionar algum tipo de feedback para o usuário, se necessário
+     }
+   } else {
+     // Se nenhum filtro for preenchido, limpar a tabela
+     document.getElementById('resultsTable').querySelector('tbody').innerHTML = '';
+   }
+ });
+ 
+   
+ </script>
+
+{{>_footer}}
