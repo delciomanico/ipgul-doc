@@ -135,11 +135,11 @@
                         {{#if nome}}
                         <tr>
                             <td><i class="bi bi-file-pdf document-icon"></i>{{nome}}</td>
-                            <td>{{responsavel}}</td>
+                            <td>{{#each responsavel}}{{nome}} {{/each}}</td>
                             <td>{{data}}</td>
                             <td><a href="/{{caminho}}" target="_blank">aqui</a></td>
                             <td>
-                                <button class="btn btn-sm btn-custom" title="Editar">
+                                <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('{{_id}}','{{nome}}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <a href="/anexo_delet/{{_id}}"><button class="btn btn-sm btn-custom" title="Deletar">
@@ -175,7 +175,36 @@
         </div>
     </div>
 </div>
+ <!-- Modal  -->
+ <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formModalLabel">Editar Anexo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="meuFormulario" action="/anexo_edit" method="post">
+            <div class="mb-3">
+              <label for="cat_nome" class="form-label">Nome Do Anexo</label>
+              <input type="text" name="nome" class="form-control" id="cat_nome" required>
+              <input type="hidden" name="id" id="cat_id">
+            </div>
 
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function mostrarPopup(id,nome) {
+    document.querySelector("#cat_nome").value = nome;
+    document.querySelector("#cat_id").value = id;
+      var modal = new bootstrap.Modal(document.getElementById('formModal'));
+      modal.show();
+    }
+    </script>
 
 
 <script>

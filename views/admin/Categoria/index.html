@@ -2,29 +2,30 @@
 
 <style>
     :root {
-        --primary-color: #FF7C38 ;
+        --primary-color: #FF7C38;
         --primary-hover: #f59d6e;
     }
-    
+
     .bg-custom {
         background-color: var(--primary-color);
     }
-    
+
     .btn-custom {
         background-color: var(--primary-color);
         color: white;
     }
-    
+
     .btn-custom:hover {
         background-color: var(--primary-hover);
         color: white;
     }
-    
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 0.25rem rgba(255, 140, 0, 0.25);
     }
-    
+
     .upload-area {
         border: 2px dashed var(--primary-color);
         border-radius: 5px;
@@ -33,75 +34,75 @@
         background-color: rgba(255, 140, 0, 0.1);
         cursor: pointer;
     }
-    
+
     .upload-area:hover {
         background-color: rgba(255, 140, 0, 0.2);
     }
-    
+
     .upload-icon {
         font-size: 3rem;
         color: var(--primary-color);
     }
-    
+
     .document-icon {
         font-size: 1.5rem;
         color: var(--primary-color);
     }
-    
+
     .table-hover tbody tr:hover {
         background-color: rgba(255, 140, 0, 0.1);
     }
-    </style>
+</style>
 
 <div class="container-fluid py-4">
     <h2 class="mb-4 text-center">Categorias</h2>
 
     {{>_msgHome}}
-    
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form id="documentForm" action="/admin/new_categoria" method="post">
+            <form id="documentForm" action="/new_categoria" method="post">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nome</label>
                         {{#each user}}
-                         {{#if nome}} 
-                        <input type="hidden" class="form-control" required name="responsavel" value="{{_id}}" >
+                        {{#if nome}}
+                        <input type="hidden" class="form-control" required name="responsavel" value="{{_id}}">
                         {{/if}}
                         {{/each}}
                         <input type="text" class="form-control" required name="nome">
                     </div>
-                    
-                  
+
+
                     <div class="col-6 text-end mt-4">
                         <button type="submit" class="btn btn-custom">
-                            <i class="bi bi-save"></i> Salvar 
+                            <i class="bi bi-save"></i> Salvar
                         </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    
- <!-- Search Filters -->
- <div class="card  shadow-sm">
-    <div class="card-body">
-        <form id="searchForm">
-            <div class="row g-3 ">
-                <div class="col-md-3">
-                    <label class="form-label">Nome</label>
-                    <input type="text" class="form-control" id="searchInput">
+
+    <!-- Search Filters -->
+    <div class="card  shadow-sm">
+        <div class="card-body">
+            <form id="searchForm">
+                <div class="row g-3 ">
+                    <div class="col-md-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="searchInput">
+                    </div>
+
+                    <div class="col-6 align-content-center text-end mt-4">
+                        <button type="submit" class="btn btn-custom">
+                            <i class="bi bi-search"></i> Pesquisar
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="col-6 align-content-center text-end mt-4">
-                    <button type="submit" class="btn btn-custom">
-                        <i class="bi bi-search"></i> Pesquisar
-                    </button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
     <!-- Results Table -->
     <div class="card shadow-sm">
@@ -122,28 +123,31 @@
                         {{#if nome}}
                         <tr>
                             <td><i class="bi bi-file-pdf document-icon"></i>{{nome}}</td>
-                            <td>{{responsavel}}</td>
+                            <td>{{#each responsavel}}{{nome}}{{/each}}</td>
                             <td>{{data}}</td>
                             <td>
-                                <button class="btn btn-sm btn-custom" title="Editar">
+                                <button class="btn btn-sm btn-custom" title="Editar"
+                                    onclick="mostrarPopup('{{_id}}','{{nome}}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <a href="categoria_delet/{{_id}}"><button class="btn btn-sm btn-custom" title="Deletar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </a>
                             </td>
                         </tr>
                         {{/if}}
                         {{/each}}
                         {{else}}
-                        <tr><td>Nenhum registro encontrado</td></tr>
+                        <tr>
+                            <td>Nenhum registro encontrado</td>
+                        </tr>
                         {{/each}}
-                       
+
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination -->
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
@@ -161,27 +165,58 @@
         </div>
     </div>
 </div>
+
+<!-- Modal  -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formModalLabel">Editar Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="meuFormulario" action="/categoria_edit" method="post">
+                    <div class="mb-3">
+                        <label for="cat_nome" class="form-label">Nome Da Categoria</label>
+                        <input type="text" name="nome" class="form-control" id="cat_nome" required>
+                        <input type="hidden" name="id" id="cat_id">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function mostrarPopup(id, nome) {
+        document.querySelector("#cat_nome").value = nome;
+        document.querySelector("#cat_id").value = id;
+        var modal = new bootstrap.Modal(document.getElementById('formModal'));
+        modal.show();
+    }
+</script>
 <script defer>
     document.getElementById('searchInput').addEventListener('input', async function () {
-    const query = this.value;
-    
-    if (query.trim()) {
-      const response = await fetch(`/admin/categoria/search_categoria/${encodeURIComponent(query)}`);
-      const results = await response.json();
-  
-      const tableBody = document.getElementById('resultsTable').querySelector('tbody');
-      tableBody.innerHTML = ''; // Limpa os resultados anteriores
-      
-      results.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        const query = this.value;
+
+        if (query.trim()) {
+            const response = await fetch(`/admin/categoria/search_categoria/${encodeURIComponent(query)}`);
+            const results = await response.json();
+
+            const tableBody = document.getElementById('resultsTable').querySelector('tbody');
+            tableBody.innerHTML = ''; // Limpa os resultados anteriores
+
+            results.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
           <td>${item.nome}</td>
           <td>${item.responsavel}</td>
           <td>${item.data}</td>
            <td>
-                <button class="btn btn-sm btn-custom" title="Editar">
-                <i class="bi bi-pencil"></i>
-                </button>
+            <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('${item._id}','${item.nome}')">
+                    <i class="bi bi-pencil"></i>
+             </button>
                 <a href="categoria_delet/${item._id}">
                     <button class="btn btn-sm btn-custom" title="Deletar">
                     <i class="bi bi-trash"></i>
@@ -189,12 +224,12 @@
                 </a>
          </td>
         `;
-        tableBody.appendChild(row); 
-      });
-    } else {
-      document.getElementById('resultsTable').querySelector('tbody').innerHTML = '';
-    }
-  });
-  
+                tableBody.appendChild(row);
+            });
+        } else {
+            document.getElementById('resultsTable').querySelector('tbody').innerHTML = '';
+        }
+    });
+
 </script>
 {{>_footer}}

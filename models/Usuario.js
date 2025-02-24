@@ -12,21 +12,20 @@ const Usuario = Schema({
     },
     senha:{
         type: String,
-        required: true
+        required: true,
     },
     eAcesso:{
         type: Number,
-        require: false,
-        default: 4
+        require: true,
     },
     email:{
         type: String,
-        required: false
+        required: false,
     },
     departamento:{
         type: Schema.Types.ObjectId,
         ref: "departamento",
-        required: true
+        required: false
     },
     data:{
         type: String,

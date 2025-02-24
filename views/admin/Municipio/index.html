@@ -54,7 +54,7 @@
     </style>
 
 <div class="container-fluid py-4">
-    <h2 class="mb-4 text-center">Municipio</h2>
+    <h2 class="mb-4 text-center">Municipios de Luanda</h2>
 
     {{>_msgHome}}
     
@@ -118,7 +118,7 @@
                             <td><i class="bi bi-file-pdf document-icon"></i>{{nome}}</td>
                             <td>{{data}}</td>
                             <td>
-                                <button class="btn btn-sm btn-custom" title="Editar">
+                                <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('{{_id}}','{{nome}}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <a href="municipio_delet/{{_id}}"><button class="btn btn-sm btn-custom" title="Deletar">
@@ -154,6 +154,37 @@
         </div>
     </div>
 </div>
+ <!-- Modal  -->
+ <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formModalLabel">Editar Municipio</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="meuFormulario" action="/admin/municipio_edit" method="post">
+            <div class="mb-3">
+              <label for="cat_nome" class="form-label">Nome Do Municipio</label>
+              <input type="text" name="nome" class="form-control" id="cat_nome" required>
+              <input type="hidden" name="id" id="cat_id">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function mostrarPopup(id,nome) {
+    document.querySelector("#cat_nome").value = nome;
+    document.querySelector("#cat_id").value = id;
+      var modal = new bootstrap.Modal(document.getElementById('formModal'));
+      modal.show();
+    }
+    </script>
 
 <script defer>
     document.getElementById('searchInput').addEventListener('input', async function () {
@@ -172,8 +203,8 @@
           <td>${item.nome}</td>
           <td>${item.data}</td>
            <td>
-                <button class="btn btn-sm btn-custom" title="Editar">
-                <i class="bi bi-pencil"></i>
+                <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('${item._id}','${item.nome}')">
+                    <i class="bi bi-pencil"></i>
                 </button>
                 <a href="municipio_delet/${item._id}">
                     <button class="btn btn-sm btn-custom" title="Deletar">

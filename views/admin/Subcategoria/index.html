@@ -60,7 +60,7 @@
     
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form id="documentForm" action="/admin/new_subcategoria" method="post">
+            <form id="documentForm" action="/new_subcategoria" method="post">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Categorias</label>
@@ -142,7 +142,7 @@
                             <td>{{#each responsavel}} {{nome}}{{/each}}</td>
                             <td>{{data}}</td>
                             <td>
-                                <button class="btn btn-sm btn-custom" title="Editar">
+                                <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('{{_id}}','{{nome}}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <a href="subcategoria_delet/{{_id}}"><button class="btn btn-sm btn-custom" title="Deletar">
@@ -179,7 +179,36 @@
     </div>
 </div>
 
+ <!-- Modal  -->
+ <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formModalLabel">Editar SubCategoria</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="meuFormulario" action="/subcategoria_edit" method="post">
+            <div class="mb-3">
+              <label for="cat_nome" class="form-label">Nome Da SubCategoria</label>
+              <input type="text" name="nome" class="form-control" id="cat_nome" required>
+              <input type="hidden" name="id" id="cat_id">
+            </div>
 
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function mostrarPopup(id,nome) {
+    document.querySelector("#cat_nome").value = nome;
+    document.querySelector("#cat_id").value = id;
+      var modal = new bootstrap.Modal(document.getElementById('formModal'));
+      modal.show();
+    }
+    </script>
 <script defer>
     document.getElementById('searchInput').addEventListener('input', async function () {
     const query = this.value;

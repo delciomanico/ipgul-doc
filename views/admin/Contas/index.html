@@ -104,8 +104,11 @@
                             <td>{{#each departamento}}{{nome}}{{/each}}</td>
                             <td>{{data}}</td>
                             <td>
-                                <button class="btn btn-sm btn-custom" title="Editar">
+                                <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('{{_id}}','{{eAcesso}}')">
                                     <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-custom" title="Senha">
+                                    <i class="bi bi-key"></i>
                                 </button>
                                 <a href="conta_delet/{{_id}}"><button class="btn btn-sm btn-custom" title="Deletar">
                                     <i class="bi bi-trash"></i>
@@ -141,6 +144,42 @@
     </div>
 </div>
 
+<!-- Modal  -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="formModalLabel">Alterar Nivel de Acesso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="meuFormulario" action="/admin/conta_edit" method="post">
+            <div class="mb-3">
+              <label for="cat_nome" class="form-label">Nivel</label>
+              <input type="hidden" name="id" id="cat_id">
+              <select name="eAcesso" id="cat_nome" required class="form-select form-control">
+                <option value="0">Suspenso</option>
+                <option value="1">Usuario</option>
+                <option value="2">Chef de Departamento</option>
+                <option value="3">Administrador</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function mostrarPopup(id,nome) {
+    document.querySelector("#cat_nome").value = nome;
+    document.querySelector("#cat_id").value = id;
+      var modal = new bootstrap.Modal(document.getElementById('formModal'));
+      modal.show();
+    }
+    </script>
+
 <script defer>
     document.getElementById('searchInput').addEventListener('input', async function () {
     const query = this.value;
@@ -161,8 +200,11 @@
           <td>${item.departamento}</td>
           <td>${item.data}</td>
            <td>
+            <button class="btn btn-sm btn-custom" title="Editar" onclick="mostrarPopup('${item._id}','${item.eAcesso}')">
+                    <i class="bi bi-pencil"></i>
+             </button>
                 <button class="btn btn-sm btn-custom" title="Editar">
-                <i class="bi bi-pencil"></i>
+                <i class="bi bi-key"></i>
                 </button>
                 <a href="contas_delet/${item._id}">
                     <button class="btn btn-sm btn-custom" title="Deletar">

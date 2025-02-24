@@ -1,6 +1,5 @@
 {{>_dashboard}}
 
-
 <style>
     :root {
         --primary-color: #FF7C38 ;
@@ -37,7 +36,7 @@
     </style>
 <div class="container-fluid py-4">
     <h2 class="mb-4 text-center">Pesquisa de Documentos</h2>
-    
+    {{>_msgHome}}
     <!-- Search Filters -->
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
@@ -45,7 +44,7 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Categoria</label>
-                        <select class="form-select form-control" id="categoria">
+                        <select class="form-select form-control" id="categoria" onchange="carregarItens()">
                             <option value="">Selecione</option>
                             {{#each categorias}}
                             {{#each this}}
@@ -60,14 +59,7 @@
                     <div class="col-md-3">
                         <label class="form-label">Sub-Categoria</label>
                         <select class="form-select form-control" id="subcategoria">
-                            <option value="">Selecione</option>
-                            {{#each subcategorias}}
-                            {{#each this}}
-                            {{#if nome}}
-                            <option value="{{_id}}">{{nome}}</option>
-                            {{/if}}
-                            {{/each}}
-                            {{/each}}
+                            <option value="">Selecione uma categoria</option>
                         </select>
                     </div>
                     
@@ -101,6 +93,8 @@
                 <table class="table table-hover" id="resultsTable"> 
                     <thead class="bg-custom text-white">
                         <tr>
+                            <th>Nossa REF</th>
+                            <th>Vossa REF</th>
                             <th>Nome do Documento</th>
                             <th>categoria</th>
                             <th>subcategoria</th>
@@ -126,6 +120,8 @@
                         {{#each this}}
                         {{#if nome}}
                         <tr>
+                            <td>{{weref}}</td>
+                            <td>{{youref}}</td>
                             <td><i class="bi bi-file-pdf document-icon"></i>{{nome}}</td>
                             <td>{{#each categoria}} {{nome}}{{/each}}</td>
                             <td>{{#each subcategoria}} {{nome}}{{/each}}</td>
@@ -152,8 +148,8 @@
                             </td>
                             <td>
                             
-                                <a href="/categoria_delet/{{_id}}">
-                                    <button class="btn btn-sm btn-custom" title="Anexar">
+                                <a href="/doc_edit/{{_id}}">
+                                    <button class="btn btn-sm btn-custom" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 </a>
@@ -196,6 +192,23 @@
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    async function carregarItens() {
+      const categoria = document.getElementById('categoria').value;
+      const response = await fetch(`/api/condicional_select/${categoria}`);
+      const itens = await response.json();
+      
+      const selectItens = document.getElementById('subcategoria');
+      selectItens.innerHTML = ''; // Limpar opções anteriores
+        console.log(itens)
+      itens.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item._id;
+        option.text = item.nome;
+        selectItens.appendChild(option);
+      });
+    }
+</script>
 <script defer>
    document.getElementById('searchForm').addEventListener('submit', async function (event) {
   event.preventDefault();  // Evita o comportamento padrão de recarregar a página
@@ -219,7 +232,7 @@
   // Se ao menos um filtro foi preenchido, faz a requisição
   if (queryString !== '?') {
     try {
-      const response = await fetch(`documento/search_documento/doc${queryString}`);
+      const response = await fetch(`/documento/search_documento/doc${queryString}`);
       if (!response.ok) {
         throw new Error('Erro na requisição');
       }
@@ -233,6 +246,8 @@
       results.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
+          <td>${item.weref}</td>
+          <td>${item.youref}</td>
           <td>${item.nome}</td>
           <td>${item.categoria.nome}</td>
           <td>${item.subcategoria.nome}</td>

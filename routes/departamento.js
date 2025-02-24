@@ -2,9 +2,9 @@ const express = require('express')
 const dep = express.Router()
 exports.dep = dep
 const mongoose = require('mongoose')
-const {eAdmin} = require('../helper/eAdmin')
-const {eDep} = require('../helper/eDep')
-const {eUser} = require('../helper/eUser')
+const { eAdmin } = require('../helper/eAdmin')
+const { eDep } = require('../helper/eDep')
+const { eUser } = require('../helper/eUser')
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
 require('../models/Categoria')
@@ -17,7 +17,7 @@ require('../models/SegDoc')
 require('../models/SubCategoria')
 require('../models/Documento')
 require('../models/Anexos')
-const {format} = require('date-fns')
+const { format } = require('date-fns')
 
 
 const Categoria = mongoose.model('categoria')
@@ -38,9 +38,9 @@ const multer = require('multer')
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const {cadastrarDocumento, atualizarCaminho, deletarDocumento} = require('../helper/caddoc'); // Ajuste o caminho para sua estrutura
-const {cadastrarAnexo, atualizarCAnexo} = require('../helper/cadanexo'); // Ajuste o caminho para sua estrutura
-const {cadastrarNotif} = require('../helper/cadNotif'); // Ajuste o caminho para sua estrutura
+const { cadastrarDocumento, atualizarCaminho, deletarDocumento, atualizarDocumento } = require('../helper/caddoc'); // Ajuste o caminho para sua estrutura
+const { cadastrarAnexo, atualizarCAnexo } = require('../helper/cadanexo'); // Ajuste o caminho para sua estrutura
+const { cadastrarNotif } = require('../helper/cadNotif'); // Ajuste o caminho para sua estrutura
 
 
 // Middleware de upload com lógica dinâmica
@@ -108,65 +108,103 @@ const upload = multer({ storage: storage });
 const upload2 = multer({ storage: storage2 });
 
 /// =================== Documento ===========
-dep.get('/doc', eUser , async (req, res) => {
+dep.get('/doc', eUser, async (req, res) => {
 
     try {
         const categorias = await Categoria.find();
         const subcategorias = await SubCategoria.find();
-        const documentos = await Documento.find({departamento: req.user.departamento})
-        .populate('categoria')
-        .populate('subcategoria')
-        .populate('departamento')
-        .populate('situacao')
-        .populate('responsavel')
-        .populate('municipio')
-        .sort({dt: "desc"});
-        res.render("admin/Documento/index", {documentos , categorias, subcategorias})
-      } catch (erro) {
+        const documentos = await Documento.find({ departamento: req.user.departamento })
+            .populate('categoria')
+            .populate('subcategoria')
+            .populate('departamento')
+            .populate('situacao')
+            .populate('responsavel')
+            .populate('municipio')
+            .sort({ dt: "desc" });
+        res.render("admin/Documento/index", { documentos, categorias, subcategorias })
+    } catch (erro) {
         console.log(erro);
         res.status(500).send('Erro ao buscar categorias e subcategorias');
-      }
+    }
 
 });
-dep.get('/new_doc', eUser ,async (req, res) => {
+dep.get('/new_doc', eUser, async (req, res) => {
 
     try {
         const categorias = await Categoria.find();
         const subcategorias = await SubCategoria.find();
-        const departamento = await Departamento.find({_id: req.user.departamento});
+        const departamento = await Departamento.find({ _id: req.user.departamento });
         const municipio = await Municipio.find();
         const situacao = await Situacao.find();
         const seg_nivel = await SegDoc.find();
-    
         res.render("admin/Documento/novo", { subcategorias, categorias, departamento, municipio, situacao, seg_nivel })
-      } catch (erro) {
+    } catch (erro) {
         console.log(erro);
         res.status(500).send('Erro ao buscar categorias e subcategorias');
-      }
+    }
+
+});
+dep.get('/doc_edit/:id', eUser, async (req, res) => {
+
+    try {
+        const [categorias, subcategorias, departamento, municipio, situacao, seg_nivel] = await Promise.all([
+            Categoria.find(),
+            SubCategoria.find(),
+            Departamento.find({ _id: req.user.departamento }),
+            Municipio.find(),
+            Situacao.find(),
+            SegDoc.find()
+        ]);
+        const documento = await Documento.find({departamento: req.user.departamento, _id: req.params.id })
+            .populate('categoria')
+            .populate('subcategoria')
+            .populate('departamento')
+            .populate('situacao')
+            .populate('responsavel')
+            .populate('municipio')
+            .sort({ dt: "desc" });
+        res.render("admin/Documento/edit", {documento,categorias, subcategorias, departamento, municipio, situacao, seg_nivel})
+    } catch (erro) {
+        console.log(erro);
+        res.status(500).send('Erro ao buscar documento');
+    }
 
 });
 
+dep.post('/doc_edit', eUser, async (req, res) => {
 
-dep.get('/doc_delet/:id', eDep, async (req, res)=>{
     try {
-        const caminho = await Documento.findOne({_id: req.params.id})
-        const camAnexo = path.join('uploads','extra',req.params.id) 
+        await atualizarDocumento(req.body);
+        cadastrarNotif(req.user, "Documento foi Editado", "Edicao");
+        req.flash('success_msg', "Documento editado com Sucesso")
+        res.redirect("/doc");
+    } catch (erro) {
+        console.log(erro);
+        res.status(500).send('Erro ao buscar documento');
+    }
+
+});
+
+dep.get('/doc_delet/:id', eDep, async (req, res) => {
+    try {
+        const caminho = await Documento.findOne({ _id: req.params.id })
+        const camAnexo = path.join('uploads', 'extra', req.params.id)
         fs.rm(caminho.caminho, { recursive: true, force: true }, (err) => {
             if (err) {
                 console.error('Erro ao deletar diretório:', err);
             } else {
                 console.log('Diretório deletado com sucesso.');
             }
-            });
+        });
         fs.rm(camAnexo, { recursive: true, force: true }, (err) => {
             if (err) {
                 console.error('Erro ao deletar diretório:', err);
             } else {
                 console.log('Diretório deletado com sucesso.');
             }
-            });
+        });
         deletarDocumento(req.params.id);
-        await Anexos.deleteMany({documento: req.params.id});
+        await Anexos.deleteMany({ documento: req.params.id });
         cadastrarNotif(req.user, "Documento foi Excluido", "Exclusao");
         req.flash('success_msg', "Usuario Cadastrado com Sucesso")
         res.redirect('/doc')
@@ -193,7 +231,7 @@ dep.post('/cad_doc', eUser, upload.single('documento'), async (req, res) => {
 
         await atualizarCaminho(documentId, newFilePath);
         //Documento.updateOne({_id: documentId}, { $set: { caminho: newFilePath } })
-        
+
         // Renomeia o arquivo
         await fs.rename(originalFilePath, newFilePath, (err) => {
             if (err) {
@@ -210,70 +248,134 @@ dep.post('/cad_doc', eUser, upload.single('documento'), async (req, res) => {
     }
 });
 
-/// ========== api ==========================00
-
-dep.get('/documento/search_documento/doc' , eUser, async (req, res) => {
+/*
+dep.get('/documento/search_documento/doc', eUser, async (req, res) => {
     try {
         const { cat, subCat, data, chave } = req.query;
         // Validação simples
         if (!cat || !subCat || !data || !chave) {
             return res.status(400).json({ error: 'Faltando parâmetros obrigatórios' });
         }
-        const results = await Documento.find({  $or: [
-            { data_criacao: data },
-            { departamento: req.user.departamento },
-        { categoria: cat },
-        { subcategoria: subCat },
-        { nome: new RegExp(chave, 'i') }
-      ]})
-      .populate('categoria')
-      .populate('subcategoria')
-      .populate('departamento')
-      .populate('situacao')
-      .populate('responsavel')
-      .populate('municipio');
-      res.json(results);  // Retorna os resultados como JSON
+        const results = await Documento.find({
+            $or: [
+                { data_criacao: data },
+                { departamento: req.user.departamento },
+                { categoria: cat },
+                { subcategoria: subCat },
+                { weref: new RegExp(chave, 'i') },
+                { youref: new RegExp(chave, 'i') },
+            ]
+        })
+            .populate('categoria')
+            .populate('subcategoria')
+            .populate('departamento')
+            .populate('situacao')
+            .populate('responsavel')
+            .populate('municipio');
+        res.json(results);  // Retorna os resultados como JSON
     } catch (error) {
         console.log(error)
-      res.status(500).json({ error: 'Erro ao buscar o município' });
+        res.status(500).json({ error: 'Erro ao buscar o documento' });
     }
 })
-dep.get('/documento/search_validade/doc' , eUser, async (req, res) => {
+*/
+dep.get('/documento/search_documento/doc', eUser, async (req, res) => {
     try {
         const { cat, subCat, data, chave } = req.query;
-        // Validação simples
-        if (!cat || !subCat || !data || !chave) {
-            return res.status(400).json({ error: 'Faltando parâmetros obrigatórios' });
+
+        // Verifica se pelo menos um parâmetro foi fornecido
+        if (!cat && !subCat && !data && !chave) {
+            return res.status(400).json({ error: 'Pelo menos um parâmetro de busca deve ser fornecido' });
         }
-        const results = await Documento.find({  $or: [
-            { data_criacao: data },
-            { departamento: req.user.departamento },
-        { categoria: cat },
-        { subcategoria: subCat },
-        { nome: new RegExp(chave, 'i') }
-      ]})
-      .populate('categoria')
-      .populate('subcategoria')
-      .populate('situacao')
-      .populate('municipio');
 
-      const documentosComDiasRestantes = results.map(doc => {
-        const dataValidade = new Date(doc.data_expiracao); // Converter string para Date
-        const dataAtual = new Date();
-        
-        // Calcular diferença em milissegundos e converter para dias
-        const diferencaMilissegundos = dataValidade - dataAtual;
-        const diasRestantes = Math.ceil(diferencaMilissegundos / (1000 * 60 * 60 * 24));
+        // Monta dinamicamente o filtro de busca
+        const query = {};
 
-        return {
-            ...doc._doc,  // Espalhar o conteúdo original do documento
-            diasRestantes: diasRestantes > 0 ? diasRestantes : 0  // Evitar valores negativos
-        };
-    });
-      res.json(documentosComDiasRestantes);  // Retorna os resultados como JSON
+        if (cat) query.categoria = cat;
+        if (subCat) query.subcategoria = subCat;
+        if (data) query.data_criacao = data;
+        if (req.user && req.user.departamento) query.departamento = req.user.departamento;
+        if (chave) {
+            query.$or = [
+                { weref: new RegExp(chave, 'i') },
+                { youref: new RegExp(chave, 'i') }
+            ];
+        }
+
+        const results = await Documento.find(query)
+            .populate('categoria')
+            .populate('subcategoria')
+            .populate('departamento')
+            .populate('situacao')
+            .populate('responsavel')
+            .populate('municipio');
+
+        res.json(results);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao buscar o documento' });
+    }
+});
+
+dep.get('/api/condicional_select/:categoria', eDep, async (req, res) => {
+    try {
+        const subcategoria = await SubCategoria.find({ categoria: req.params.categoria })
+
+        res.json(subcategoria);
+    } catch (error) {
+        console.error('Erro:', error);
+        res.status(500).send({ message: error.message });
+    }
+})
+/// ========== api ==========================00
+
+
+dep.get('/documento/search_validade/doc', eUser, async (req, res) => {
+    try {
+        const { cat, subCat, data, chave } = req.query;
+
+        // Verifica se pelo menos um parâmetro foi fornecido
+        if (!cat && !subCat && !data && !chave) {
+            return res.status(400).json({ error: 'Pelo menos um parâmetro de busca deve ser fornecido' });
+        }
+
+        // Monta dinamicamente o filtro de busca
+        const query = {};
+
+        if (cat) query.categoria = cat;
+        if (subCat) query.subcategoria = subCat;
+        if (data) query.data_criacao = data;
+        if (req.user && req.user.departamento) query.departamento = req.user.departamento;
+        if (chave) {
+            query.$or = [
+                { situacao: chave }
+            ];
+        }
+        const results = await Documento.find(query)
+        .populate('categoria')
+        .populate('subcategoria')
+        .populate('departamento')
+        .populate('situacao')
+        .populate('responsavel')
+        .populate('municipio');
+
+        const documentosComDiasRestantes = results.map(doc => {
+            const dataValidade = new Date(doc.data_expiracao); // Converter string para Date
+            const dataAtual = new Date();
+
+            // Calcular diferença em milissegundos e converter para dias
+            const diferencaMilissegundos = dataValidade - dataAtual;
+            const diasRestantes = Math.ceil(diferencaMilissegundos / (1000 * 60 * 60 * 24));
+
+            return {
+                ...doc._doc,  // Espalhar o conteúdo original do documento
+                diasRestantes: diasRestantes > 0 ? diasRestantes : 0  // Evitar valores negativos
+            };
+        });
+        res.json(documentosComDiasRestantes);  // Retorna os resultados como JSON
     } catch (error) {
         console.log(error)
-      res.status(500).json({ error: 'Erro ao buscar o município' });
+        res.status(500).json({ error: 'Erro ao buscar o documento' });
     }
 })
 
@@ -323,7 +425,7 @@ dep.get('/api/relatorio', eUser, async (req, res) => {
                 }
             },
             { $sort: { count: -1 } } // Ordenar pela contagem, caso deseje
-            ,{
+            , {
                 $lookup: {
                     from: 'situacaos', // Nome correto da coleção de departamentos
                     localField: '_id', // O campo local que faz a referência (neste caso, '_id' do grupo)
@@ -334,7 +436,7 @@ dep.get('/api/relatorio', eUser, async (req, res) => {
             {
                 $unwind: '$s_info' // Opcional: Descompacta o array de dados populados
             }
-            
+
         ]);
 
         // Enviar os dados no formato esperado para o frontend
@@ -354,7 +456,7 @@ dep.get('/api/relatorio', eUser, async (req, res) => {
     }
 });
 
-dep.get('/api/documentos/recentes',eUser, (req, res) => {
+dep.get('/api/documentos/recentes', eUser, (req, res) => {
     const { start, end } = req.query;
     const startDate = start;
     const endDate = end;
@@ -368,7 +470,7 @@ dep.get('/api/documentos/recentes',eUser, (req, res) => {
         .catch(err => res.status(500).json({ error: 'Erro ao buscar documentos' }));
 });
 
-dep.get('/api/documentos/status' , eUser, async (req, res) => {
+dep.get('/api/documentos/status', eUser, async (req, res) => {
     try {
         const result = [];  // Use um array para armazenar os resultados.
         const list = await Situacao.find();  // Buscando todas as situações
@@ -376,22 +478,24 @@ dep.get('/api/documentos/status' , eUser, async (req, res) => {
         const { start, end } = req.query;
         // Usando o loop for...of para iterar diretamente sobre os itens da lista.
         for (const situacao of list) {
-        // Realiza a contagem de documentos de forma assíncrona.
-         const qt = await Documento.countDocuments({ situacao: situacao._id ,departamento: req.user.departamento , data_criacao: {
-            $gte: start,
-            $lte: end
-        }});
+            // Realiza a contagem de documentos de forma assíncrona.
+            const qt = await Documento.countDocuments({
+                situacao: situacao._id, departamento: req.user.departamento, data_criacao: {
+                    $gte: start,
+                    $lte: end
+                }
+            });
 
-        // Cria o objeto de resultado.
-        const r = {
-        nome: situacao.nome,
-        qt: qt,
-         };
+            // Cria o objeto de resultado.
+            const r = {
+                nome: situacao.nome,
+                qt: qt,
+            };
 
-         // Adiciona o objeto ao array de resultados.
-         result.push(r);
+            // Adiciona o objeto ao array de resultados.
+            result.push(r);
         }
-        res.json({dados: result})
+        res.json({ dados: result })
     } catch (error) {
         console.log(error)
     }
@@ -400,26 +504,26 @@ dep.get('/api/documentos/status' , eUser, async (req, res) => {
 
 /// ============ dash
 
-dep.get('/dash' , eUser , async (req, res) => {
+dep.get('/dash', eUser, async (req, res) => {
     try {
         const result = [];  // Use um array para armazenar os resultados.
         const list = await Situacao.find();  // Buscando todas as situações
 
         // Usando o loop for...of para iterar diretamente sobre os itens da lista.
         for (const situacao of list) {
-        // Realiza a contagem de documentos de forma assíncrona.
-         const qt = await Documento.countDocuments({ situacao: situacao._id , departamento: req.user.departamento});
+            // Realiza a contagem de documentos de forma assíncrona.
+            const qt = await Documento.countDocuments({ situacao: situacao._id, departamento: req.user.departamento });
 
-        // Cria o objeto de resultado.
-        const r = {
-        nome: situacao.nome,
-        qt: qt,
-         };
+            // Cria o objeto de resultado.
+            const r = {
+                nome: situacao.nome,
+                qt: qt,
+            };
 
-         // Adiciona o objeto ao array de resultados.
-         result.push(r);
+            // Adiciona o objeto ao array de resultados.
+            result.push(r);
         }
-        res.render('admin/dash', {dados: result})
+        res.render('admin/dash', { dados: result })
     } catch (error) {
         console.log(error)
     }
@@ -427,20 +531,33 @@ dep.get('/dash' , eUser , async (req, res) => {
 /// ============ Anexos
 
 dep.get('/anexos/:id', eUser, async (req, res) => {
-    try 
-    {
-      const anexos = await Anexos.find({documento: req.params.id});
-      res.render('admin/Anexos/index', {docID: req.params.id, anexos});
-    } catch (erro) 
-    {
-      console.log(erro);
-      res.status(500).send('Erro ao buscar categorias e subcategorias');
+    try {
+        const anexos = await Anexos.find({ documento: req.params.id }).populate("responsavel");
+        res.render('admin/Anexos/index', { docID: req.params.id, anexos });
+    } catch (erro) {
+        console.log(erro);
+        res.status(500).send('Erro ao buscar categorias e subcategorias');
     }
 });
 
+dep.post('/anexo_edit', eDep, async (req, res) =>{
+    try {
+        const { id, nome } = req.body;
+        const responsavel = req.user._id;
+        const caminho = await Anexos.findOne({ _id: id });
+        const categoria = await Anexos.findByIdAndUpdate(id, { nome, responsavel}, { new: true });
+        req.flash('success_msg', '  Editado!');
+        cadastrarNotif(req.user, "Anexo foi Editado", "Edição");
+        res.redirect('/anexos/' + caminho.documento);
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+})
+
 dep.post('/anexos', eUser, upload2.single('documento'), async (req, res) => {
-        try {
-            // Cadastra o documento e aguarda o ID retornado
+    try {
+        // Cadastra o documento e aguarda o ID retornado
         const documentId = await cadastrarAnexo(req.body);
         const nowTimestamp = Date.now()
         const nowDate = new Date(nowTimestamp)
@@ -455,7 +572,7 @@ dep.post('/anexos', eUser, upload2.single('documento'), async (req, res) => {
 
         atualizarCAnexo(documentId, newFilePath);
         //Documento.updateOne({_id: documentId}, { $set: { caminho: newFilePath } })
-        
+
         // Renomeia o arquivo
         fs.rename(originalFilePath, newFilePath, (err) => {
             if (err) {
@@ -463,20 +580,20 @@ dep.post('/anexos', eUser, upload2.single('documento'), async (req, res) => {
                 return res.status(500).send('Erro ao processar o arquivo.');
             }
         });
-        caminho = await Anexos.findOne({_id: documentId});
+        caminho = await Anexos.findOne({ _id: documentId });
         cadastrarNotif(req.user, "Novo Anexo foi Cadastrado", "Cadastro");
-        res.redirect('/anexos/'+caminho.documento);
+        res.redirect('/anexos/' + caminho.documento);
 
-        } catch (error) {
-            console.error('Erro ao realizar o upload:', error);
-            res.status(500).send({ message: error.message });
-        }
-    });
-    
+    } catch (error) {
+        console.error('Erro ao realizar o upload:', error);
+        res.status(500).send({ message: error.message });
+    }
+});
 
-dep.get('/anexo_delet/:id', eDep, async (req, res)=>{
+
+dep.get('/anexo_delet/:id', eDep, async (req, res) => {
     try {
-        const caminho = await Anexos.findOne({_id: req.params.id})
+        const caminho = await Anexos.findOne({ _id: req.params.id })
         fs.rm(caminho.caminho, { recursive: true, force: true }, (err) => {
             if (err) {
                 console.error('Erro ao deletar diretório:', err);
@@ -485,10 +602,10 @@ dep.get('/anexo_delet/:id', eDep, async (req, res)=>{
             }
         });
 
-        const resp = await Anexos.findOneAndDelete({_id: req.params.id});
+        const resp = await Anexos.findOneAndDelete({ _id: req.params.id });
         cadastrarNotif(req.user, "Anexo foi Excluido", "Exclusao");
         req.flash('success_msg', "Diretorio deletado com Sucesso")
-        res.redirect('/anexos/'+caminho.documento);
+        res.redirect('/anexos/' + caminho.documento);
     } catch (error) {
         console.error('Erro ao deletar:', error);
         res.status(500).send({ message: error.message });
@@ -496,178 +613,280 @@ dep.get('/anexo_delet/:id', eDep, async (req, res)=>{
 })
 
 //======================== auditoria ===========
-dep.get("/auditoria", eUser, async(req, res)=>{
+dep.get("/auditoria", eUser, async (req, res) => {
     try {
-        
-        const dados =  await Notificacoes.find({departamento: req.user.departamento})
-        .populate('autor')
-        .sort({dt: "desc"});
-        res.render("admin/Auditoria/index", {dados});
+
+        const dados = await Notificacoes.find({ departamento: req.user.departamento })
+            .populate('autor')
+            .sort({ dt: "desc" });
+        res.render("admin/Auditoria/index", { dados });
     } catch (error) {
         console.log(error)
         res.send(error)
     }
 })
 //======================== Validade de Documento ===========
-dep.get("/doc_validade", eUser, async(req, res)=>{
+dep.get("/doc_validade", eUser, async (req, res) => {
     try {
-        
-            const categorias = await Categoria.find();
-            const subcategorias = await SubCategoria.find();
-            const documentos = await Documento.find({})        
+
+        const situacao = await Situacao.find();
+        const categorias = await Categoria.find();
+        const subcategorias = await SubCategoria.find();
+        const documentos = await Documento.find({ 
+            $or: [
+                { data_expiracao: { $exists: false } }, // Campo não existe
+                { data_expiracao: null }                // Campo é nulo
+            ]
+        }).limit(150)
             .populate('categoria')
             .populate('subcategoria')
             .populate('situacao')
             .populate('municipio');
-    
-            const documentosComDiasRestantes = documentos.map(doc => {
-                const dataValidade = new Date(doc.data_expiracao); // Converter string para Date
-                const dataAtual = new Date();
-                
-                // Calcular diferença em milissegundos e converter para dias
-                const diferencaMilissegundos = dataValidade - dataAtual;
-                const diasRestantes = Math.ceil(diferencaMilissegundos / (1000 * 60 * 60 * 24));
-    
-                return {
-                    ...doc._doc,  // Espalhar o conteúdo original do documento
-                    diasRestantes: diasRestantes > 0 ? diasRestantes : 0  // Evitar valores negativos
-                };
-            });
-            res.render("admin/Documento/validade", {dados: documentosComDiasRestantes, categorias, subcategorias});
-        } catch (error) {
-            res.status(500).json({ message: 'Erro ao calcular dias restantes', error });
-        }
+
+        const documentosComDiasRestantes = documentos.map(doc => {
+            const dataValidade = new Date(doc.data_expiracao); // Converter string para Date
+            const dataAtual = new Date();
+
+            // Calcular diferença em milissegundos e converter para dias
+            const diferencaMilissegundos = dataValidade - dataAtual;
+            const diasRestantes = Math.ceil(diferencaMilissegundos / (1000 * 60 * 60 * 24));
+
+            return {
+                ...doc._doc,  // Espalhar o conteúdo original do documento
+                diasRestantes: diasRestantes > 0 ? diasRestantes : 0  // Evitar valores negativos
+            };
+        });
+        res.render("admin/Documento/validade", { dados: documentosComDiasRestantes, categorias, subcategorias, situacao });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao calcular dias restantes', error });
+    }
 })
 
 
 // ======   Categoria ===============
-dep.get('/categoria', eUser, (req, res)=>{
+dep.get('/categoria', eUser, (req, res) => {
 
-    Categoria.find().then((categorias)=>{
+    Categoria.find().populate("responsavel").then((categorias) => {
 
-        res.render('admin/Categoria/index', {categorias: categorias})
+        res.render('admin/Categoria/index', { categorias: categorias })
     })
 })
-dep.post('/new_categoria', eUser,(req, res)=>{
+dep.post('/new_categoria', eUser, (req, res) => {
     erros = []
 
-    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null){
-        erros.push({texto: "Nome invalido"})
+    if (!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({ texto: "Nome invalido" })
     }
-    if(req.body.nome.length < 2){
-        erros.push({texto: "Nome da categoria, muito pequena"})
+    if (req.body.nome.length < 2) {
+        erros.push({ texto: "Nome da categoria, muito pequena" })
     }
-    if(erros.length > 0){
-        res.render("admin/categoria", {erros: erros})
-    }else{
+    if (erros.length > 0) {
+        res.render("admin/categoria", { erros: erros })
+    } else {
         new Categoria({
             nome: req.body.nome,
             responsavel: req.body.responsavel
-        }).save().then(()=>{
+        }).save().then(() => {
             cadastrarNotif(req.user, "Nova categoria foi Cadastrada", "Cadastro");
             req.flash('success_msg', 'Categoria criada com exito')
             console.log("Categoria cadastrada")
-            res.redirect('/admin/Categoria')
-        }).catch((err)=>{
+            res.redirect('/categoria')
+        }).catch((err) => {
             req.flash('error_msg', 'erro ao criar, tente novamente')
             console.log("erro no cadastro . ", err)
-            res.redirect('/admin/Categoria')
+            res.redirect('/categoria')
         })
     }
 })
-dep.get('/categoria_delet/:id', eDep, (req, res)=>{
+dep.get('/categoria_delet/:id', eDep, (req, res) => {
 
-    Categoria.deleteOne({_id:req.params.id}).then(()=>{
+    Categoria.deleteOne({ _id: req.params.id }).then(() => {
         cadastrarNotif(req.user, "Categoria foi Excluida", "Exclusao");
         req.flash('success_msg', 'deletado !')
-        res.redirect('/admin/categoria')
-    }).catch((error)=>{
-        req.flash('error_msg', 'Erro ao deletar (', error,')')
-        res.redirect('/admin/categoria')
+        res.redirect('/categoria')
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao deletar (', error, ')')
+        res.redirect('/categoria')
     })
 })
 
+dep.post('/categoria_edit', eDep, async (req, res) =>{
+    try {
+        const { id, nome } = req.body;
+        const responsavel = req.user._id;
+        const categoria = await Categoria.findByIdAndUpdate(id, { nome, responsavel}, { new: true });
+        req.flash('success_msg', '  Editado!');
+        res.redirect("/categoria")
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+})
 dep.get('/categoria/search_categoria/:q', eUser, async (req, res) => {
     const query = req.params.q.toLowerCase();
     try {
-      const results = await Categoria.find({ nome: new RegExp(query, 'i') }); // Exemplo usando Mongoose
-      res.json(results);  // Retorna os resultados como JSON
+        const results = await Categoria.find({ nome: new RegExp(query, 'i') }); // Exemplo usando Mongoose
+        res.json(results);  // Retorna os resultados como JSON
     } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar o município' });
+        res.status(500).json({ error: 'Erro ao buscar o município' });
     }
 });
 
 
 // ======   Sub Categoria ===============
-dep.get('/subcategoria', eUser ,async (req, res) => {
+dep.get('/subcategoria', eUser, async (req, res) => {
     try {
-      const categorias = await Categoria.find();
-      const subcategorias = await SubCategoria.find().populate("categoria").populate("responsavel");
-  
-      res.render('admin/Subcategoria/index', { subcategorias, categorias });
+        const categorias = await Categoria.find();
+        const subcategorias = await SubCategoria.find().populate("categoria").populate("responsavel");
+
+        res.render('admin/Subcategoria/index', { subcategorias, categorias });
     } catch (erro) {
-      console.log(erro);
-      res.status(500).send('Erro ao buscar categorias e subcategorias');
+        console.log(erro);
+        res.status(500).send('Erro ao buscar categorias e subcategorias');
     }
-  });
-  
-dep.post('/new_subcategoria', eUser, (req, res)=>{
+});
+
+dep.post('/new_subcategoria', eUser, (req, res) => {
     erros = []
 
-    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null){
-        erros.push({texto: "Nome invalido"})
+    if (!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({ texto: "Nome invalido" })
     }
-    if(req.body.nome.length < 2){
-        erros.push({texto: "Nome da subcategoria, muito pequeno"})
+    if (req.body.nome.length < 2) {
+        erros.push({ texto: "Nome da subcategoria, muito pequeno" })
     }
-    if(erros.length > 0){
-        res.render("admin/subcategoria", {erros: erros})
-    }else{
+    if (erros.length > 0) {
+        res.render("admin/Subcategoria/index", { erros: erros })
+    } else {
         new SubCategoria({
             nome: req.body.nome,
             categoria: req.body.categoria,
             responsavel: req.body.responsavel
-        }).save().then(()=>{
+        }).save().then(() => {
             cadastrarNotif(req.user, "Nova subcategoria foi Cadastrada", "Cadastro");
             req.flash('success_msg', 'criada com exito')
-            console.log("cadastrada")
-            res.redirect('/admin/subcategoria')
-        }).catch((err)=>{
+            res.redirect('/subcategoria')
+        }).catch((err) => {
             req.flash('error_msg', 'erro ao criar, tente novamente')
             console.log("erro no cadastro . ", err)
-            res.redirect('/admin/subcategoria')
+            res.redirect('/subcategoria')
         })
     }
 })
-dep.get('/subcategoria_delet/:id', eDep,(req, res)=>{
+dep.get('/subcategoria_delet/:id', eDep, (req, res) => {
 
-    SubCategoria.deleteOne({_id:req.params.id}).then(()=>{
+    SubCategoria.deleteOne({ _id: req.params.id }).then(() => {
         cadastrarNotif(req.user, "Subcategoria foi Excluida", "Exclusao");
         req.flash('success_msg', 'deletado !')
-        res.redirect('/admin/subcategoria')
-    }).catch((error)=>{
-        req.flash('error_msg', 'Erro ao deletar (', error,')')
-        res.redirect('/admin/subcategoria')
+        res.redirect('/subcategoria')
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao deletar (', error, ')')
+        res.redirect('/subcategoria')
     })
 })
-
+dep.post('/subcategoria_edit', eDep, async (req, res) =>{
+    try {
+        const { id, nome } = req.body;
+        const responsavel = req.user._id;
+        const subcategoria = await SubCategoria.findByIdAndUpdate(id, { nome, responsavel}, { new: true });
+        req.flash('success_msg', '  Editado!');
+        res.redirect("/subcategoria")
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+})
 dep.get('/subcategoria/search_subcategoria/:q', eUser, async (req, res) => {
     const query = req.params.q.toLowerCase();
     try {
-      const results = await SubCategoria.find({ nome: new RegExp(query, 'i') }); // Exemplo usando Mongoose
-      res.json(results);  // Retorna os resultados como JSON
+        const results = await SubCategoria.find({ nome: new RegExp(query, 'i') }); // Exemplo usando Mongoose
+        res.json(results);  // Retorna os resultados como JSON
     } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar a subcategoria' });
+        res.status(500).json({ error: 'Erro ao buscar a subcategoria' });
     }
 });
 
 // ========================  perfil ===========
 
-dep.get("/perfil", eUser, async(req, res)=>{
+dep.get("/perfil", eUser, async (req, res) => {
     try {
-        
-        const dados =  await Usuario.find({_id: req.user._id}).populate('departamento')
-        res.render("admin/Contas/perfil", {dados});
+
+        const dados = await Usuario.find({ _id: req.user._id }).populate('departamento')
+        res.render("admin/Contas/perfil", { dados });
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+})
+dep.post("/perfil_edit", eUser, async (req, res) => {
+    try {
+        const { nome, email } = req.body;
+        const usuario = await Usuario.findByIdAndUpdate(req.user._id, { nome, email }, { new: true });
+        req.flash('success_msg', '  Editado!');
+        res.redirect("/perfil")
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+})
+
+dep.post('/perfil/password', eUser, async (req, res) => {
+
+    var error = []
+    try {
+        if (!req.body.senha || typeof req.body.senha == undefined || req.body.senha == null) {
+            error.push({ texto: "Senha invalido !" })
+        }
+
+        if (req.body.senha1.length < 4) {
+            error.push({ texto: "Senha muito curta" })
+        }
+
+        if (req.body.senha1 != req.body.senha2) {
+            error.push({ texto: "Senhas não correspondem" })
+        }
+
+        if (error.length > 0) {
+            const dados = await Usuario.find({ _id: req.user._id }).populate('departamento')
+            res.render("admin/Contas/perfil2", { dados, error: error });
+        } else {
+
+            bcrypt.compare(req.body.senha, req.user.senha, (erro, isIgual) => {
+                if (isIgual) {
+                    const novoUsuario = new Usuario({
+                        senha: req.body.senha1
+                    })
+
+                    let senha = novoUsuario.senha
+                    let salt = bcrypt.genSaltSync(10)
+
+                    bcrypt.hash(senha, salt, (err, hashed) => {
+                        if (err) {
+                            console.error(err)
+                            return
+                        }
+                        novoUsuario.senha = hashed
+                        Usuario.findOne({ _id: req.user._id }).then((user) => {
+                            user.senha = novoUsuario.senha
+                            user.save().then(() => {
+                                req.flash('success_msg', "Senha editada com Sucesso")
+                                res.redirect('/perfil')
+                            }).catch((error) => {
+                                console.log(error)
+                                req.flash('error_msg', "Houve um erro ao editar senha, tente novamente" + error)
+                                res.redirect('/perfil')
+                            })
+                        })
+                        //novoUsuario
+                    })
+
+                } else {
+                    req.flash('error_msg', "Senha errada")
+                    res.redirect('/perfil')
+                }
+            })
+
+        }
     } catch (error) {
         console.log(error)
         res.send(error)
@@ -675,26 +894,102 @@ dep.get("/perfil", eUser, async(req, res)=>{
 })
 
 
+// ======================= registro ====================
+
+dep.get('/registro', (req, res) => {
+    Departamento.find().then((departamento) => {
+        res.render('registro', { departamento: departamento })
+    })
+})
+
+dep.post('/registro/add', (req, res) => {
+    var error = []
+
+    if (!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        error.push({ texto: "Nome invalido !" })
+    }
+    if (!req.body.senha || typeof req.body.senha == undefined || req.body.senha == null) {
+        error.push({ texto: "Senha invalido !" })
+    }
+    if (!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        error.push({ texto: "Email invalido !" })
+    }
+
+    if (req.body.senha.length < 4) {
+        error.push({ texto: "Senha muito curta" })
+    }
+
+    if (req.body.senha != req.body.senha2) {
+        error.push({ texto: "Senhas não correspondem" })
+    }
+
+    if (error.length > 0) {
+        res.render("registro", { error: error })
+    } else {
+        try {
+
+            Usuario.findOne({ email: req.body.email }).then(async (usuario) => {
+
+                if (usuario != null) {
+                    req.flash('error_msg', "Ja exite um usuario com este email")
+                    res.redirect('/admin/registro')
+                } else {
+                    const usuarios = await Usuario.find({ eAcesso: 3 });
+                    const novoUsuario = new Usuario({
+                        nome: req.body.nome,
+                        email: req.body.email,
+                        departamento: req.body.departamento,
+                        senha: req.body.senha,
+                        eAcesso: usuarios.length === 0 ? 3 : 0
+                    })
+
+                    let senha = novoUsuario.senha
+                    let salt = bcrypt.genSaltSync(10)
+                    bcrypt.hash(senha, salt, (err, hashed) => {
+                        if (err) {
+                            console.error(err)
+                            return
+                        }
+                        novoUsuario.senha = hashed
+                        novoUsuario.save().then(() => {
+                            req.flash('success_msg', "Usuario Cadastrado com Sucesso")
+                            res.redirect('/')
+                        }).catch((error) => {
+                            console.log(error)
+                            req.flash('error_msg', "Houve um erro ao criar usuario, tente novamente")
+                            res.redirect('/')
+                        })
+                    })
+                }
+            }).catch((error) => {
+                req.flash('error_msg', "Houve um erro interno (", error)
+                res.redirect('/')
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+})
 //========================login ===========
 
-dep.get('/login',( req, res)=>{
+dep.get('/login', (req, res) => {
     res.render('login')
 })
-dep.post('/login',( req, res, next)=>{
+dep.post('/login', (req, res, next) => {
 
-     passport.authenticate('local',{
-         successRedirect: "/admin/dash",
-         failureRedirect: "/login",
-         failureFlash: true,
-     })(req, res, next)
+    passport.authenticate('local', {
+        successRedirect: "/admin/dash",
+        failureRedirect: "/login",
+        failureFlash: true,
+    })(req, res, next)
 })
 
-dep.get('/logout' ,(req, res)=>{
- req.logout(()=>{
+dep.get('/logout', (req, res) => {
+    req.logout(() => {
 
-     req.flash('success_msg','Sessão Terminada!')
-     res.redirect('/login')
- })
+        req.flash('success_msg', 'Sessão Terminada!')
+        res.redirect('/login')
+    })
 })
 
 module.exports = dep

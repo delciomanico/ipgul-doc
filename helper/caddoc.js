@@ -12,6 +12,8 @@ async function cadastrarDocumento(data) {
     try {
         // Cria um novo documento com os dados fornecidos
         const document = new Document({
+            weref: data.weref,
+            youref: data.youref,
             nome: data.nome,
             categoria: data.categoria,
             subcategoria: data.subcategoria,
@@ -58,4 +60,35 @@ async function atualizarCaminho(nome, novaIdade) {
     }
 }
 
-module.exports = {cadastrarDocumento, atualizarCaminho, deletarDocumento};
+async function atualizarDocumento(data) {
+    try {
+        console.log(data)
+        const result = await Documento.findByIdAndUpdate(
+            data._id, 
+            { 
+                $set: {
+                    weref: data.weref,
+                    youref: data.youref,
+                    nome: data.nome,
+                    categoria: data.categoria,
+                    subcategoria: data.subcategoria,
+                    municipio: data.municipio,
+                    situacao: data.situacao,
+                    origem: data.origem,
+                    versao: data.versao,
+                    caminho_fisico: data.caminho_fisico,
+                    descricao: data.descricao,
+                    seg_nivel: data.seguranca,
+                    responsavel: data.responsavel,
+                    data_expiracao: data.data_expiracao,
+                }
+            },
+            { new: true, runValidators: true } // Retorna o documento atualizado e valida os campos
+        );
+    } catch (error) {
+        console.error('Erro ao atualizar documento:', error);
+    }
+    
+}
+
+module.exports = {cadastrarDocumento, atualizarCaminho, deletarDocumento, atualizarDocumento};

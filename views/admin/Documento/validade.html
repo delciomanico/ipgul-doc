@@ -78,7 +78,16 @@
                     
                     <div class="col-md-3">
                         <label class="form-label">Palavra-chave</label>
-                        <input type="text" class="form-control" placeholder="Buscar..." id="chave">
+                        <select class="form-select form-control" id="chave">
+                            <option value="">Selecione</option>
+                            {{#each situacao}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
                     </div>
                     
                     <div class="col-12 text-end">
@@ -241,7 +250,7 @@
          tableBody.appendChild(row);
        });
      } catch (error) {
-        alert('Prencha todos os campos')
+        alert('Prencha um dos campos')
        console.error('Erro ao realizar a pesquisa:', error);
        // Adicionar algum tipo de feedback para o usuário, se necessário
      }

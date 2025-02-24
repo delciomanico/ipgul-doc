@@ -6,6 +6,14 @@ const nowTimestamp = Date.now()
 const nowDate = new Date(nowTimestamp)
 
 const Documento = Schema({
+    weref: {
+        type: String,
+        required: false
+    },
+    youref: {
+        type: String,
+        required: false
+    },
     nome: {
         type: String,
         required: true
@@ -57,8 +65,7 @@ const Documento = Schema({
         required: false
     },
     seg_nivel:{
-        type: Schema.Types.ObjectId,
-        ref: "segdoc",
+        type: String,
         required: true
     },
     responsavel:{

@@ -58,8 +58,16 @@
     
     <div class="card shadow-sm">
         <div class="card-body">
-            <form id="documentForm" action="cad_doc" method="post" enctype="multipart/form-data">
+            <form id="documentForm" action="/cad_doc" method="post" enctype="multipart/form-data">
                 <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Vossa Referencia</label>
+                        <input type="text" class="form-control"  id="youref" name="youref">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nossa Referencia</label>
+                        <input type="text" class="form-control"  id="weref" name="weref">
+                    </div>
                     <div class="col-md-6">
                         {{#each user}} {{#if nome}} 
                         <input type="hidden" name="responsavel" value="{{_id}}">
@@ -70,7 +78,7 @@
                     
                     <div class="col-md-3">
                         <label class="form-label">Categoria de Documento</label>
-                        <select class="form-select form-control" required name="categoria">
+                        <select class="form-select form-control" required name="categoria" id="categoria" onchange="carregarItens()">
                             <option value="">Selecionar ...</option>
                             {{#each categorias}}
                             {{#each this}}
@@ -83,15 +91,8 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Subcategoria de Documento</label>
-                        <select class="form-select form-control" required name="subcategoria">
-                            <option value="">Selecionar ...</option>
-                            {{#each subcategorias}}
-                            {{#each this}}
-                            {{#if nome}}
-                            <option value="{{_id}}">{{nome}}</option>
-                            {{/if}}
-                            {{/each}}
-                            {{/each}}
+                        <select class="form-select form-control" required name="subcategoria" id="subcategoria">
+                            <option value="">Selecionar uma categoria</option>
                         </select>
                     </div>
                     
@@ -182,24 +183,18 @@
                     <div class="col-md-3">
                         <label class="form-label">Segurança do Documento</label>
                         <select class="form-select form-control" required name="seguranca">
-                            {{#each seg_nivel}}
-                            {{#each this}}
-                            {{#if nome}}
-                            <option value="{{_id}}">{{nome}}</option>
-                            {{/if}}
-                            {{/each}}
-                            {{/each}}
+                            <option value="0">Livre</option>
+                            <option value="1">Restrito</option>
                         </select>
                     </div>
                     
                     <div class="col-12 text-end mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="window.location.href='https://example.com/documents'">
+                        <button type="button" class="btn btn-secondary" onclick="">
                             <i class="bi bi-x-circle"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-custom">
                             <i class="bi bi-save"></i> Salvar Documento
                         </button>
-                        <input type="submit" class="btn btn-custom" value="Salvar Documento">
                     </div>
                 </div>
             </form>
@@ -209,6 +204,24 @@
 </div>
 
 <!-- Bootstrap Bundle with Popper -->
+
+<script>
+    async function carregarItens() {
+      const categoria = document.getElementById('categoria').value;
+      const response = await fetch(`/api/condicional_select/${categoria}`);
+      const itens = await response.json();
+      
+      const selectItens = document.getElementById('subcategoria');
+      selectItens.innerHTML = ''; // Limpar opções anteriores
+        console.log(itens)
+      itens.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item._id;
+        option.text = item.nome;
+        selectItens.appendChild(option);
+      });
+    }
+</script>
 
 <script>
 

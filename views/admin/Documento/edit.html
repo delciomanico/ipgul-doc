@@ -1,0 +1,277 @@
+{{>_dashboard}}
+
+<style>
+    :root {
+        --primary-color: #FF7C38;
+        --primary-hover: #faa06f;
+    }
+
+    .bg-custom {
+        background-color: var(--primary-color);
+    }
+
+    .btn-custom {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-custom:hover {
+        background-color: var(--primary-hover);
+        color: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(255, 140, 0, 0.25);
+    }
+
+    .upload-area {
+        border: 2px dashed var(--primary-color);
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        background-color: rgba(255, 140, 0, 0.1);
+        cursor: pointer;
+    }
+
+    .upload-area:hover {
+        background-color: rgba(255, 140, 0, 0.2);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+    }
+
+    .document-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 140, 0, 0.1);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-center">Editar Documento</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form id="documentForm" action="/doc_edit" method="post">
+                <div class="row g-3">
+                    {{#each documento}} {{#each this}}{{#if nome}}
+                    <div class="col-md-6">
+                        <input type="hidden" name="_id" value="{{_id}}">
+                        <label class="form-label">Vossa Referencia</label>
+                        <input type="text" class="form-control" id="youref" name="youref" value="{{youref}}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nossa Referencia</label>
+                        <input type="text" class="form-control" id="weref" name="weref" value="{{weref}}">
+                    </div>
+
+                    <div class="col-md-6">
+                        {{#each responsavel}}{{#if nome}}
+                        <input type="hidden" name="responsavel" value="{{_id}}">
+                        {{/if}}{{/each}}
+                        <label class="form-label">Nome do Documento</label>
+                        <input type="text" class="form-control" required id="nome" name="nome" value="{{nome}}">
+                    </div>
+                    {{/if}}{{/each}} {{/each}}
+                    <div class="col-md-3">
+                        <label class="form-label">Categoria de Documento</label>
+                        <select class="form-select form-control" required name="categoria" id="categoria"
+                            onchange="carregarItens()">
+
+                            {{#each documento}} {{#each this}}{{#if nome}}
+                            {{#each categoria}}{{#if nome}}
+                            <option value="{{_id}}" selected>{{nome}}</option>
+                            {{/if}}{{/each}}
+                            {{/if}}{{/each}} {{/each}}
+
+                            {{#each categorias}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Subcategoria de Documento</label>
+                        <select class="form-select form-control" required name="subcategoria" id="subcategoria">
+                            {{#each documento}} {{#each this}}{{#if nome}}
+                            {{#each subcategoria}}{{#if nome}}
+                            <option value="{{_id}}" selected>{{nome}}</option>
+                            {{/if}}{{/each}}
+                            {{/if}}{{/each}} {{/each}}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Municipio de Documento</label>
+                        <select class="form-select form-control" required name="municipio">
+                            {{#each documento}} {{#each this}}{{#if nome}}
+                            {{#each municipio}}{{#if nome}}
+                            <option value="{{_id}}" selected>{{nome}}</option>
+                            {{/if}}{{/each}}
+                            {{/if}}{{/each}} {{/each}}
+
+                            {{#each municipio}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Situacao do Documento</label>
+                        <select class="form-select form-control" required name="situacao">
+                            {{#each documento}} {{#each this}}{{#if nome}}
+                            {{#each situacao}}{{#if nome}}
+                            <option value="{{_id}}" selected>{{nome}}</option>
+                            {{/if}}{{/each}}
+                            {{/if}}{{/each}} {{/each}}
+
+
+                            {{#each situacao}}
+                            {{#each this}}
+                            {{#if nome}}
+                            <option value="{{_id}}">{{nome}}</option>
+                            {{/if}}
+                            {{/each}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Origem de Documento</label>
+                        <select class="form-select form-control" required name="origem">
+                            {{#each documento}} {{#each this}}{{#if nome}}
+                            <option value="{{origem}}" selected>{{origem}}</option>
+                            {{/if}}{{/each}} {{/each}}
+                            <option value="Externa">Externa</option>
+                            <option value="Interna">Interna</option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="form-label">Versao do Documento</label>
+                        {{#each documento}} {{#each this}}{{#if nome}}
+                        <input type="number" class="form-control" name="versao" value="{{versao}}">
+                        {{/if}}{{/each}} {{/each}}
+
+                    </div>
+                    <div class="col-md-6">
+                        {{#each documento}} {{#each this}}{{#if nome}}
+                        <label class="form-label">Data de Entrada</label>
+                        <input type="date" class="form-control" name="data_entrada" value="{{data_criacao}}">
+                        {{/if}}{{/each}} {{/each}}
+                    </div>
+                    <div class="col-md-6">
+                        {{#each documento}} {{#each this}}{{#if nome}}
+                        <label class="form-label">Data de expiracao</label>
+                        <input type="date" class="form-control" name="data_expiracao" value="{{data_expiracao}}">
+                        {{/if}}{{/each}} {{/each}}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{#each documento}} {{#each this}}{{#if nome}}
+                        <label class="form-label">Caminho Fisico</label>
+                        <input type="text" class="form-control" placeholder="Separe as tags por vírgula"
+                            name="caminho_fisico" value="{{caminho_fisico}}">
+                        {{/if}}{{/each}} {{/each}}
+                    </div>
+
+                    <div class="col-md-12">
+                        {{#each documento}} {{#each this}}{{#if nome}}
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-control" rows="3" name="descricao">{{descricao}}</textarea>
+                        {{/if}}{{/each}} {{/each}}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Segurança do Documento</label>
+                        <select class="form-select form-control" required name="seguranca">
+                           <option value="0">Livre</option>
+                           <option value="1">Restrito</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-custom">
+                            <i class="bi bi-save"></i> Salvar Documento
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+
+<script>
+    async function carregarItens() {
+        const categoria = document.getElementById('categoria').value;
+        const response = await fetch(`/api/condicional_select/${categoria}`);
+        const itens = await response.json();
+
+        const selectItens = document.getElementById('subcategoria');
+        selectItens.innerHTML = ''; // Limpar opções anteriores
+        console.log(itens)
+        itens.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item._id;
+            option.text = item.nome;
+            selectItens.appendChild(option);
+        });
+    }
+</script>
+
+<script>
+
+
+    // File upload handling
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const fileName2 = document.getElementById('nome');
+
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(255, 140, 0, 0.2)';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(255, 140, 0, 0.1)';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(255, 140, 0, 0.1)';
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            fileName.textContent = `Arquivo selecionado: ${files[0].name}`;
+            fileName2.value = files[0].name;
+        }
+    }
+</script>
+{{>_footer}}
